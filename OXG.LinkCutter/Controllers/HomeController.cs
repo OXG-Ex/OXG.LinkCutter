@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -15,11 +16,13 @@ namespace OXG.LinkCutter.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly CutterDbContext db;
+        private readonly IWebHostEnvironment env;
 
-        public HomeController(ILogger<HomeController> logger, CutterDbContext context)
+        public HomeController(ILogger<HomeController> logger, CutterDbContext context, IWebHostEnvironment environment)
         {
             _logger = logger;
             db = context;
+            env = environment;
         }
 
         public IActionResult Index()
@@ -34,6 +37,8 @@ namespace OXG.LinkCutter.Controllers
             //await db.Users.AddAsync(user);
             //await db.SaveChangesAsync();
 
+            //TODO: добавить проверку корректности. manager может вернуть null если ссылка не соответсвует регулярному выражению
+
             var manager = new LinkManager();
             var link = manager.Cut(originalLink);
             if (!User.Identity.IsAuthenticated)
@@ -42,6 +47,8 @@ namespace OXG.LinkCutter.Controllers
             }
             await db.Links.AddAsync(link);
             await db.SaveChangesAsync();
+
+            var s = env.ApplicationName;
 
             return View(link);
         }

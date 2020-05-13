@@ -51,7 +51,8 @@ namespace OXG.LinkCutter
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseAuthentication();    // аутентификация
+            app.UseAuthorization(); //авторизация
 
             app.UseEndpoints(endpoints =>
             {
