@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using OXG.LinkCutter.Data;
 using OXG.LinkCutter.Models;
 
 namespace OXG.LinkCutter.Controllers
@@ -12,15 +14,36 @@ namespace OXG.LinkCutter.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly CutterDbContext db;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, CutterDbContext context)
         {
             _logger = logger;
+            db = context;
         }
 
         public IActionResult Index()
         {
             return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CutLink(string originalLink)
+        {
+            //var user = new User() { Email = "anonymous@user.com",PasswordHash="", Role="User" };
+            //await db.Users.AddAsync(user);
+            //await db.SaveChangesAsync();
+
+            var manager = new LinkManager();
+            var link = manager.Cut(originalLink);
+            if (!User.Identity.IsAuthenticated)
+            {
+                link.User = await db.Users.FirstOrDefaultAsync();
+            }
+            await db.Links.AddAsync(link);
+            await db.SaveChangesAsync();
+
+            return View(link);
         }
 
         public IActionResult Privacy()
