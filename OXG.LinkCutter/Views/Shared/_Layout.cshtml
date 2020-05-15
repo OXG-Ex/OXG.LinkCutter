@@ -24,7 +24,7 @@
                         <i class="fas fa-sign-in-alt"></i>
                         Вход
                     </button>
-
+                    <br />
                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal" id="regBtn">
                         <i class="far fa-registered"></i>
                         Регистрация
@@ -35,8 +35,8 @@
             {
                 <a class="h2 btn btn-link" asp-area="" asp-controller="Account" asp-action="Index">
                     <i class="fas fa-user"></i>
-                    Привет, @User.Identity.Name! 
-                </a> 
+                    Привет, @User.Identity.Name!
+                </a>
                 <h6>|</h6>
                 <a class="h2 btn btn-link" asp-action="Logout" asp-controller="Account">
                     <i class="fas fa-sign-out-alt"></i>
@@ -46,6 +46,14 @@
         </nav>
     </header>
     <div class="container">
+        @if (ViewBag.Message != null)
+        {
+            <div class="alert alert-dismissible alert-warning">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                <h4 class="alert-heading">!</h4>
+                <p class="mb-0">@ViewBag.Message</p>
+            </div>
+        }
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -94,21 +102,22 @@
                     <div class="error text-danger"></div>
                 </div>
                 <div class="modal-footer">
-                    <input type="submit" class="btn btn-secondary"  id="loginBtn" value="ВХОД" @*asp-controller="Account" asp-action="Login"*@ />
-                    <input type="submit" class="btn btn-secondary"  id="registerBtn" style="display:none" value="РЕГИСТРАЦИЯ" @*asp-controller="Account" asp-action="Register"*@ />
+                    <input type="submit" class="btn btn-secondary" id="loginBtn" value="ВХОД" @*asp-controller="Account" asp-action="Login"*@ />
+                    <input type="submit" class="btn btn-secondary" id="registerBtn" style="display:none" value="РЕГИСТРАЦИЯ" @*asp-controller="Account" asp-action="Register"*@ />
                 </div>
             </form>
         </div>
     </div>
 </div>
 
+<!-- Скрипт переключения регистрации/авторизации и базовой валидации данных -->
 <script>
     window.onload = function () {
         $('#regBtn').bind('click', function (e) {
             $("#loginBtn").hide();
             $('#registerBtn').show();
             $('#confirmPass').show();
-            $('#LoginForm').attr('action','/Account/Register');
+            $('#LoginForm').attr('action', '/Account/Register');
             $('#modalLabel').html("РЕГИСТРАЦИЯ");
         });
 
@@ -120,25 +129,29 @@
             $('#modalLabel').html("АВТОРИЗАЦИЯ");
         });
 
-        //TODO: добавить проверку длинны пароля
         $("#InputPassword2").on("keyup", function () {
             var value_input1 = $("#InputPassword1").val();
             var value_input2 = $(this).val();
             if (value_input1 != value_input2) {
-
-                $(".error").html("Пароли не совпадают!");е
+                $("#InputPassword1").addClass("is-invalid");
+                $(".error").html("Пароли не совпадают!"); е
                 $("#registerBtn").attr("disabled", "disabled");
 
             } else {
-
+                $("#InputPassword1").removeClass("is-invalid");
                 $("#registerBtn").removeAttr("disabled");
                 $(".error").html("");
             }
+        });
 
-            if (value_input1.length < 6) {
+        $("#InputPassword1").on("keyup", function () {
+            var value_input = $(this).val();
+            if (value_input.length < 6) {
+                $("#InputPassword1").addClass("is-invalid");
                 $(".error").html("Слишком короткий пароль!"); е
                 $("#registerBtn").attr("disabled", "disabled");
             } else {
+                $("#InputPassword1").removeClass("is-invalid");
                 $("#registerBtn").removeAttr("disabled");
                 $(".error").html("");
             }

@@ -56,22 +56,31 @@ namespace OXG.LinkCutter.Controllers
         [HttpPost]
         public async Task<IActionResult> Register(string email, string pass, string passConfirm)
         {
-            //TODO: Валидация данных
-            var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null)
+            //Валидация данных
+            if (pass == passConfirm && pass != null && pass.Length >= 6)
             {
-                // добавляем пользователя в бд
-                db.Users.Add(new User { Email = email, PasswordHash = pass.GetHashCode(), Role = "user" });
+                var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+                if (user == null)
+                {
+                    // добавление пользователя в бд
+                    //!!! ВАЖНО !!! Пароль хэшируется методом String.GetHashCode(), 
+                    //в других версиях .Net Core алгоритм хэширования может быть изменён
+                    db.Users.Add(new User { Email = email, PasswordHash = pass.GetHashCode(), Role = "user" });
 
-                await db.SaveChangesAsync();
+                    await db.SaveChangesAsync();
 
-                await Authenticate(email); // аутентификация
+                    await Authenticate(email); // аутентификация
 
-                return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    ViewBag.Message = "Ошибка: Пользователь с таким Email уже существует";
+                }
             }
             else
             {
-                //TODO: Валидация данных
+                ViewBag.Message = "Ошибка: Некорректные данные регистрации";
             }
             return RedirectToAction("Index", "Home");
         }

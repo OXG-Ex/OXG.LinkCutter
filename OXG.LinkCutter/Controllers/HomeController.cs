@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -27,7 +28,6 @@ namespace OXG.LinkCutter.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var test = ("admin123").GetHashCode();
             //Инициализация БД
             if (db.Users.Count() == 0)
             {
@@ -43,22 +43,28 @@ namespace OXG.LinkCutter.Controllers
         [HttpPost]
         public async Task<IActionResult> CutLink(string originalLink)
         {
-            //TODO: добавить проверку корректности. manager может вернуть null если ссылка не соответсвует регулярному выражению
-            //TODO: добавить автоматическое создание анонимного пользователя
+            //фабрика сокращённых ссылок
             var manager = new LinkManager();
-            var link = manager.Cut(originalLink);
-            if (!User.Identity.IsAuthenticated)
+            
+            //Новая ссылка
+            var link = manager.Cut(originalLink);//
+
+            if (link == null)//Проверка на соответствие ссылки формату
             {
-                link.User = await db.Users.FirstOrDefaultAsync();
+                ViewBag.Message = "Ошибка: Введённая строка не соответствует формату URL";
+                return View("Index");
+            }
+
+            if (!User.Identity.IsAuthenticated)//Если пользователь не аутентифицирован
+            {
+                link.User = await db.Users.FirstOrDefaultAsync();//Используется анонимный пользователь
             }
             else
             {
-                link.User = await db.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefaultAsync(); 
+                link.User = await db.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefaultAsync(); //Иначе ссылка связывается с пользователем
             }
             await db.Links.AddAsync(link);
             await db.SaveChangesAsync();
-
-            var s = env.ApplicationName;
 
             return View(link);
         }
@@ -68,11 +74,23 @@ namespace OXG.LinkCutter.Controllers
             return View();
         }
 
+        [Authorize]
         public async Task<IActionResult> RemoveLink(int id)
         {
-            var lnk = await db.Links.Where(l => l.Id == id).FirstOrDefaultAsync();
-            db.Links.Remove(lnk);
-            await db.SaveChangesAsync();
+            var lnk = await db.Links.Include(l => l.User).Where(l => l.Id == id).FirstOrDefaultAsync();//Получение ссылки
+
+            var user = await db.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefaultAsync();
+
+            if (lnk.User.Email == User.Identity.Name || user.Role == "ADMIN")//Если ссылка принадлежит пользователю или пользователь в роли Администратора
+            {
+                db.Links.Remove(lnk); //Удаление ссылки из БД
+                await db.SaveChangesAsync();
+            }
+            else
+            {
+                ViewBag.Message = "404";
+                return View("Index");
+            }
             return RedirectToAction("Index","Account");
         }
 
