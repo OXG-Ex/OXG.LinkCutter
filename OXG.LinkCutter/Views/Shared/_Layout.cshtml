@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - OXG.LinkCutter</title>
+    <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
@@ -17,6 +17,25 @@
                     <i class="fas fa-cut"></i>
                 </a>
             </div>
+            @if (!User.Identity.IsAuthenticated)
+            {
+                <div class="row">
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal" id="logBtn">
+                        Вход
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal" id="regBtn">
+                        Регистрация
+                    </button>
+                </div>
+            }
+            else
+            {
+                <a class="h2 btn btn-link" asp-area="" asp-controller="Account" asp-action="Index">
+                    <i class="fas fa-user"></i>
+                    Привет, @User.Identity.Name!
+                </a>
+            }
         </nav>
     </header>
     <div class="container">
@@ -36,3 +55,86 @@
     @RenderSection("Scripts", required: false)
 </body>
 </html>
+
+
+
+
+<!-- Окно Входа/Регистрации -->
+<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" action="/Account/Login" id="LoginForm">
+                <div class="modal-header">
+                    <h5 class="modal-title text-center" id="modalLabel">АВТОРИЗАЦИЯ</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <div class="form-group">
+                        <label for="InputEmail">Email</label>
+                        <input type="email" name="email" class="form-control" id="InputEmail" aria-describedby="emailHelp" placeholder="Введите email" required>
+                        <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                    </div>
+                    <div class="form-group">
+                        <label for="InputPassword1">Пароль</label>
+                        <input type="password" name="pass" class="form-control" id="InputPassword1" placeholder="" required>
+                    </div>
+                    <div class="form-group" style="display:none" id="confirmPass">
+                        <label for="InputPassword2">Подтвердите пароль:</label>
+                        <input type="password" name="passConfirm" class="form-control" id="InputPassword2" placeholder="">
+                    </div>
+                    <div class="error text-danger"></div>
+                </div>
+                <div class="modal-footer">
+                    <input type="submit" class="btn btn-secondary"  id="loginBtn" value="ВХОД" @*asp-controller="Account" asp-action="Login"*@ />
+                    <input type="submit" class="btn btn-secondary"  id="registerBtn" style="display:none" value="РЕГИСТРАЦИЯ" @*asp-controller="Account" asp-action="Register"*@ />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.onload = function () {
+        $('#regBtn').bind('click', function (e) {
+            $("#loginBtn").hide();
+            $('#registerBtn').show();
+            $('#confirmPass').show();
+            $('#LoginForm').attr('action','/Account/Register');
+            $('#modalLabel').html("РЕГИСТРАЦИЯ");
+        });
+
+        $('#logBtn').bind('click', function (e) {
+            $("#loginBtn").show();
+            $('#registerBtn').hide();
+            $('#confirmPass').hide();
+            $('#LoginForm').attr('action', '/Account/Login');
+            $('#modalLabel').html("АВТОРИЗАЦИЯ");
+        });
+
+        //TODO: добавить проверку длинны пароля
+        $("#InputPassword2").on("keyup", function () {
+            var value_input1 = $("#InputPassword1").val();
+            var value_input2 = $(this).val();
+            if (value_input1 != value_input2) {
+
+                $(".error").html("Пароли не совпадают!");е
+                $("#registerBtn").attr("disabled", "disabled");
+
+            } else {
+
+                $("#registerBtn").removeAttr("disabled");
+                $(".error").html("");
+            }
+
+            if (value_input1.length < 6) {
+                $(".error").html("Слишком короткий пароль!"); е
+                $("#registerBtn").attr("disabled", "disabled");
+            } else {
+                $("#registerBtn").removeAttr("disabled");
+                $(".error").html("");
+            }
+        });
+    };
+</script>

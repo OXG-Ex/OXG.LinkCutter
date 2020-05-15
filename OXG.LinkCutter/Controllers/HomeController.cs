@@ -38,12 +38,16 @@ namespace OXG.LinkCutter.Controllers
             //await db.SaveChangesAsync();
 
             //TODO: добавить проверку корректности. manager может вернуть null если ссылка не соответсвует регулярному выражению
-
+            //TODO: добавить автоматическое создание анонимного пользователя
             var manager = new LinkManager();
             var link = manager.Cut(originalLink);
             if (!User.Identity.IsAuthenticated)
             {
                 link.User = await db.Users.FirstOrDefaultAsync();
+            }
+            else
+            {
+                link.User = await db.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefaultAsync(); 
             }
             await db.Links.AddAsync(link);
             await db.SaveChangesAsync();

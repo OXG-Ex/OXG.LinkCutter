@@ -9,7 +9,7 @@ using OXG.LinkCutter.Data;
 
 namespace OXG.LinkCutter.Controllers
 {
-    public class RedirectController : ControllerBase
+    public class RedirectController : Controller
     {
 
         private readonly CutterDbContext db;
