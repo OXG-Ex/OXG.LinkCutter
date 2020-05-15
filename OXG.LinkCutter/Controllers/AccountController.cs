@@ -24,7 +24,7 @@ namespace OXG.LinkCutter.Controllers
         }
 
         [Authorize]
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> Index()
         {
             var user = await db.Users.Where(u => u.Email == User.Identity.Name).FirstOrDefaultAsync();
             IQueryable model;
@@ -43,7 +43,7 @@ namespace OXG.LinkCutter.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string pass)
         {
-            User user = await db.Users.FirstOrDefaultAsync(u => u.Email == email && u.PasswordHash == pass.GetHashCode());
+            User user = await db.Users.Where(u => u.Email == email && u.PasswordHash == pass.GetHashCode()).FirstOrDefaultAsync();
             if (user != null)
             {
                 await Authenticate(email); // аутентификация
@@ -92,7 +92,7 @@ namespace OXG.LinkCutter.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-            return RedirectToAction("Login", "Account");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

@@ -25,18 +25,24 @@ namespace OXG.LinkCutter.Controllers
             env = environment;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var test = ("admin123").GetHashCode();
+            //Инициализация БД
+            if (db.Users.Count() == 0)
+            {
+                var user = new User() { Email = "anonymous@user.com", PasswordHash = 0, Role = "user" };//Анонимный пользователь, к нему будут привязываться ссылки от пользователей без аккаунтов
+                var admin = new User() { Email = "admin@admin.com", PasswordHash = ("admin123").GetHashCode(), Role = "ADMIN" };//Аккаунт Администратора
+                await db.Users.AddAsync(user);
+                await db.Users.AddAsync(admin);
+                await db.SaveChangesAsync();
+            }
             return View();
         }
 
         [HttpPost]
         public async Task<IActionResult> CutLink(string originalLink)
         {
-            //var user = new User() { Email = "anonymous@user.com",PasswordHash="", Role="User" };
-            //await db.Users.AddAsync(user);
-            //await db.SaveChangesAsync();
-
             //TODO: добавить проверку корректности. manager может вернуть null если ссылка не соответсвует регулярному выражению
             //TODO: добавить автоматическое создание анонимного пользователя
             var manager = new LinkManager();
@@ -60,6 +66,14 @@ namespace OXG.LinkCutter.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public async Task<IActionResult> RemoveLink(int id)
+        {
+            var lnk = await db.Links.Where(l => l.Id == id).FirstOrDefaultAsync();
+            db.Links.Remove(lnk);
+            await db.SaveChangesAsync();
+            return RedirectToAction("Index","Account");
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

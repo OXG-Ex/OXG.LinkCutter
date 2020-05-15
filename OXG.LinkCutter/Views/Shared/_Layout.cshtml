@@ -21,10 +21,12 @@
             {
                 <div class="row">
                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal" id="logBtn">
+                        <i class="fas fa-sign-in-alt"></i>
                         Вход
                     </button>
 
                     <button type="button" class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal" id="regBtn">
+                        <i class="far fa-registered"></i>
                         Регистрация
                     </button>
                 </div>
@@ -33,7 +35,12 @@
             {
                 <a class="h2 btn btn-link" asp-area="" asp-controller="Account" asp-action="Index">
                     <i class="fas fa-user"></i>
-                    Привет, @User.Identity.Name!
+                    Привет, @User.Identity.Name! 
+                </a> 
+                <h6>|</h6>
+                <a class="h2 btn btn-link" asp-action="Logout" asp-controller="Account">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выход
                 </a>
             }
         </nav>
