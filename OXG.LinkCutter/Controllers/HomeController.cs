@@ -29,7 +29,7 @@ namespace OXG.LinkCutter.Controllers
         public async Task<IActionResult> Index()
         {
             //Инициализация БД
-            if (db.Users.Count() == 0)
+            if (db.Users.Count() < 1)
             {
                 var user = new User() { Email = "anonymous@user.com", PasswordHash = 0, Role = "user" };//Анонимный пользователь, к нему будут привязываться ссылки от пользователей без аккаунтов
                 var admin = new User() { Email = "admin@admin.com", PasswordHash = ("admin123").GetHashCode(), Role = "ADMIN" };//Аккаунт Администратора
